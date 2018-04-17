@@ -18,8 +18,8 @@
 
 propaga(Puz, Pos, Posicoes) :-
   term(Puz, Pos, Term),
-  propaga_aux(Pos, Term, Unsorted),
-  sort(Unsorted, Posicoes).
+  propaga_aux(Pos, Term, Desord),
+  sort(Desord, Posicoes).
 
 % constroi a lista de posicoes a preencher
 propaga_aux(Pos, [Pos|_], [Pos]).
@@ -94,13 +94,33 @@ sub_total_col(J, [H|T], STotal) :-
   JPos \= J,
   sub_total_col(J, T, Parc),
   STotal is Parc.
-  
-% extrai do puzzle o total da linha I
-total_lin([_, Totais_Linhas, _], I, Total) :-
-  length(Totais_Linhas, Dim),
-  I =< Dim,
-  elemento_k(Totais_Linhas, I, Total).
 
+%-possibilidades_linha(Piz, Posicoes_linha, Total, Ja_Preenchidas, Possibilidade_L)-%
+% Dado o puzzle: Puz
+% Dado o total para a linha: Total
+% Dada a lista de posicoes da linha L: Posicoes_linha
+% Dada a lista de posicoes ja escolhidas: Ja_Preenchidas
+% Calculamos a lista ordenada Possibilidades_L, que tem todas as possibilidades para
+% preencher a linha L
+
+
+
+
+% calcula o sub_total da coluna I, dada uma lista de posicoes preenchidas
+sub_total_linha(_, [], 0).
+sub_total_linha(I, [H|T], STotal) :-
+  lin(H, Ipos),
+  I == Ipos,
+  sub_total_linha(I, T, Parc),
+  STotal is Parc + 1.
+
+sub_total_linha(I, [H|T], STotal) :-
+  lin(H, Ipos),
+  I == Ipos,
+  sub_total_linha(I, T, Parc),
+  STotal is Parc + 1.
+
+  
 
 
 
@@ -130,4 +150,9 @@ elemento_k([_|T], Pos, El) :-
 % Dim Puzzle[Pos, Linhas, Colunas] = Dim Linhas
 dim([_, Linhas, _], Len) :- length(Linhas, Len).
 
+% extrai do puzzle o total da linha I
+total_lin([_, Totais_Linhas, _], I, Total) :-
+  length(Totais_Linhas, Dim),
+  I =< Dim,
+  elemento_k(Totais_Linhas, I, Total).
 

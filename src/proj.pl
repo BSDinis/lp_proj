@@ -1,167 +1,94 @@
-% 89416 Baltasar Azevedo e Silva Dinis 
-% Projeto LP
+%%% Baltasar Dinis 89416
 %
-% Puzzles Termometros
-
-%importa puzzles exemplos
-:- [exemplos_puzzles].
-
-
-
-%------------------------ propaga(Puz, Pos, Posicoes) ------------------------%
-% preencher Pos implica preencher todos os elementos de Posicoes
+% Projeto de LP
 %
-% dependencias:
-% * propaga_aux
-% * term
-%   ** term_aux, isin
-
-propaga(Puz, Pos, Posicoes) :-
-  term(Puz, Pos, Term),
-  propaga_aux(Pos, Term, Desord),
-  sort(Desord, Posicoes).
-
-% constroi a lista de posicoes a preencher
-propaga_aux(Pos, [Pos|_], [Pos]).
-propaga_aux(Pos, [H|T], [H|Tail]) :- propaga_aux(Pos, T, Tail).
-
-
-% term(Puz, Pos, Term)
+% Solucionador de problemas de termometros
 %
-% a posicao Pos esta no termometro Term
+%%%
 
-term([Terms|_], Pos, Term) :- term_aux(Terms, Pos, Term).
+%%%
+% Predicados Auxiliares
+%%%
 
-% se o termometro da cabeça da lista contem a posicao Pos, e o resultado
-term_aux([Term|_], Pos, Term) :- isin(Pos, Term).
-% senao, procura no resto da lista
-term_aux([_|T], Pos, Term) :- term_aux(T, Pos, Term).
-% senao existir, retorna falso
-
-
-
-%---------- nao_altera_linhas_anteriores(Posicoes, J, Ja_Preenchidas) ---------%
-% Se preenchermos a linha L com Posicoes, todas as posicoes da lista que pertencem
-% a linhas anteriores a L pertencem a Ja_Preenchidas
+%% propaga/3
+% propaga(+Puz, +Pos, -Posicoes) is det
 %
-% dependencias: isin
-
-nao_altera_linhas_anteriores([], _, _).
-nao_altera_linhas_anteriores([(I, J)|T], N, Ja_Preenchidas) :-
-  I < N,
-  isin((I, J), Ja_Preenchidas),
-  nao_altera_linhas_anteriores(T, N, Ja_Preenchidas).
-
-nao_altera_linhas_anteriores([(I, _)|T], N, Ja_Preenchidas) :-
-  I >= N,
-  nao_altera_linhas_anteriores(T, N, Ja_Preenchidas).
-
-
-%---------- verifica_parcial(Puz, Ja_Preenchidas, Dim, Poss) ---------%
-% Dado o puzzle: Puz; com dimensao: Dim
-% Dada a lista de posições ja preenchidas: Ja_Preenchidas
-% Dada a lista de possibilidades a preencher para a linha N: Poss
+% inputs:
+%   Puz: lista com 3 listas: termometros, totais das linhas
+%        e totais das colunas.
 %
-% dependencias: 
-%   * total_col, sub_total_col, col
-%     ** elemento_k
+%   Pos: posicao preencher (tuplo)
+%
+% output:
+%   Posicoes: dado o puzzle Puz, preencher a posicao Pos implica 
+%   		  preencher as posicoes em Posicoes
+%%
 
-verifica_parcial(_, _, _, []).
-verifica_parcial(Puz, Ja_Preenchidas, Dim, [H|T]) :-
-  col(H, J),
-  total_col(Puz, J, Total),
-  sub_total_col(J, Ja_Preenchidas, SubTotal),
-  Parc is SubTotal + 1,
-  Parc =< Total,
-  verifica_parcial(Puz, Ja_Preenchidas, Dim, T).
+propaga([Terms|_], Pos, Posicoes) :- propaga_simpl(Terms, Pos, Posicoes).
 
-% extrai do puzzle o total da linha J
-total_col([_, _, Totais_Colunas], J, Total) :-
-  length(Totais_Colunas, Dim),
-  J =< Dim,
-  elemento_k(Totais_Colunas, J, Total).
-
-% calcula o sub_total da coluna J, dada a lista de posicoes preenchidas
-sub_total_col(_, [], 0).
-sub_total_col(J, [H|T], STotal) :- 
-  col(H, JPos),
-  JPos == J,
-  sub_total_col(J, T, Parc),
-  STotal is Parc + 1.
-
-sub_total_col(J, [H|T], STotal) :- 
-  col(H, JPos),
-  JPos \= J,
-  sub_total_col(J, T, Parc),
-  STotal is Parc.
-
-%-possibilidades_linha(Puz, Posicoes_linha, Total, Ja_Preenchidas, Possibilidades_L)-%
-% Dado o puzzle: Puz
-% Dado o total para a linha: Total
-% Dada a lista de posicoes da linha L: Posicoes_linha
-% Dada a lista de posicoes ja escolhidas: Ja_Preenchidas
-% Calculamos a lista ordenada Possibilidades_L, que tem todas as possibilidades para
-% preencher a linha L
-
-possibilidades_linha(Puz, Posicoes_linha, Total, Ja_Preenchidas, Possibilidades_L) :-
-     linha_lista(Posicoes_linha, L),
-     nao_altera_linhas_anteriores(Possibilidades_L, L, Ja_Preenchidas),
-     dim(Puz, D),
-     verifica_parcial(Puz, Ja_Preenchidas, D, Possibilidades_L),
-     sub_total_linha(L, Possibilidades_L, T),
-     T == Total,
-     sorted(Possibilidades_L).
-
-% calcula o sub_total da linha I, 
-% dada uma lista de posicoes preenchidas
-sub_total_linha(_, [], 0).
-sub_total_linha(I, [H|T], STotal) :-
-  linha(H, Ipos),
-  I == Ipos,
-  sub_total_linha(I, T, Parc),
-  STotal is Parc + 1.
-
-sub_total_linha(I, [H|T], STotal) :-
-  linha(H, Ipos),
-  I \= Ipos,
-  sub_total_linha(I, T, Parc),
-  STotal is Parc.
-
+%% propaga_simpl/3
+% propaga(+Terms, +Pos, -Posicoes) is det
+%
+% inputs:
+%   Terms: lista de termometros
+%
+%   Pos: posicao preencher (tuplo)
+%
+% output:
+%   Posicoes: dada a lista de termometros Terms, preencher a posicao Pos
+%   		  implica preencher as posicoes em Posicoes
+%%
   
+propaga_simpl([Term|_], Pos, Posicoes) :-
+  member(Pos, Term),
+  !,
+  preenche_term(Term, Pos, Posicoes).
+
+propaga_simpl([Term|Terms], Pos, Posicoes) :-
+  \+ member(Pos, Term),
+  propaga_simpl(Terms, Pos, Posicoes).
+
+%% preenche_term/3
+% preenche_term(+Term, +Pos, -Posicoes) is det
+%
+% inputs:
+%   Term: termometro a ser preenchido (lista de tuplos)
+%
+%   Pos: posicao preencher (tuplo)
+%
+% output:
+%   Posicoes: dado o puzzle Puz, preencher as posicoes Pos implica 
+%   		  preencher as posicoes em Posicoes
+%%
+
+preenche_term(Term, Pos, Posicoes) :- 
+  preenche_term(Term, Pos, [], Posicoes);
 
 
-%---------- funcoes auxiliares -----------%
-% isin(Termo, Lista)
-% se esta na cabeça retorna,
-% senao, procura no resto da lista
-isin(Termo, [Termo|_]).
-isin(Termo, [H|T]) :- 
-  Termo \= H,
-  isin(Termo, T).
+%% preenche_term/4
+% preenche_term(+Term, +Pos, ?Parc, -Posicoes) is det
+%
+% inputs:
+%   Term: termometro a ser preenchido (lista de tuplos)
+%
+%   Pos: posicao preencher (tuplo)
+%
+% output:
+%   Posicoes: dado o puzzle Puz, preencher as posicoes Pos implica 
+%   		  preencher as posicoes em Posicoes
+%
+% Parc: acumulador
+%%
 
-% linha(Posicao, Linha): encontra a linha (1o elemento) de um tuplo
-linha((I, _), I). 
+preenche_term([], _, Parc, Parc).
 
-% col(Posicao, Coluna): encontra a coluna (2o elemento) de um tuplo
-col((_, J), J). 
+preenche_term([Pos|_], Pos, Parc, Posicoes) :-
+  sort([Pos|Parc], Posicoes), !.
 
-% elemento_k(Lista, Pos, El): encontra o elemento da Lista na posicao Pos 
-elemento_k([El|_], 1, El).
-elemento_k([_|T], Pos, El) :-
-  Pos > 1,
-  NPos is Pos -1,
-  elemento_k(T, NPos, El).
+preenche_term([H|T], Pos, Parc, Posicoes) :-
+  H \= Pos,
+  preenche_term(T, Pos, [H|Parc], Posicoes).
 
-% linha_lista(Lista, L): dada uma lista, retorna a linha do primeiro elemento
-linha_lista(Lista, Linha) :- elemento_k(Lista, 1, El), linha(El, Linha).
 
-% encontra a dimensão do puzzle
-% Dim Puzzle[Pos, Linhas, Colunas] = Dim Linhas
-dim([_, Linhas, _], Len) :- length(Linhas, Len).
 
-% extrai do puzzle o total da linha I
-total_lin([_, Totais_Linhas, _], I, Total) :-
-  length(Totais_Linhas, Dim),
-  I =< Dim,
-  elemento_k(Totais_Linhas, I, Total).
 

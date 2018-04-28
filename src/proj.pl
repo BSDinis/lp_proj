@@ -113,11 +113,13 @@ preenche_term([H|T], Pos, Parc, Posicoes) :-
 nao_altera_linhas_anteriores([], _, _).
 nao_altera_linhas_anteriores([(I, J)|Posicoes], L, Ja_Preenchidas) :-
   I < L,
-  member((I, J), Ja_Preenchidas).
+  member((I, J), Ja_Preenchidas),
+  nao_altera_linhas_anteriores(Posicoes, L, Ja_Preenchidas).
 
-nao_altera_linhas_anteriores([(I, J)|Posicoes], L, Ja_Preenchidas) :-
+nao_altera_linhas_anteriores([(I, _)|Posicoes], L, Ja_Preenchidas) :-
   I == L,
-  member((I, J), Ja_Preenchidas).
+  nao_altera_linhas_anteriores(Posicoes, L, Ja_Preenchidas).
+
 
     
 

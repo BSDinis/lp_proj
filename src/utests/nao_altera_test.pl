@@ -2,12 +2,12 @@
 %
 % Baltasar Dinis
 %
-% Tests the propaga/3 predicate
+% Tests the nao_altera_linhas_anteriores/3 predicate
 %
 %%%
 
-:- [proj].
-:- ['../exemplos_puzzles'].
+:- ['../proj'].
+:- ['../../exemplos_puzzles'].
 
 test(Test_number) :-
   puzzle(5_1, Puz),

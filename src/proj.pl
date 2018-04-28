@@ -103,15 +103,24 @@ preenche_term([H|T], Pos, Parc, Posicoes) :-
 % nao_altera_linhas_anteriores(+Posicoes, +L, +Ja_Preenchidas)
 %
 % inputs:
-%   Posicoes: possivel preenchimento da linha L
+%   Posicoes: possivel preenchimento da linha L, com a propagacao ja feita
 %   Ja_Preenchidas: lista de posicoes ja preenchidas
 %
 % retorna falso se a lista de Posicoes causa conflitos com as posicoes
 % ja preenchidas
 %
 
-nao_altera_linhas_ateriores([], L, Ja_Preenchidas).
-nao_altera_linhas_ateriores([Pos|Posicoes], L, Ja_Preenchidas) :-
+nao_altera_linhas_anteriores([], _, _).
+nao_altera_linhas_anteriores([(I, J)|Posicoes], L, Ja_Preenchidas) :-
+  I < L,
+  member((I, J), Ja_Preenchidas).
+
+nao_altera_linhas_anteriores([(I, J)|Posicoes], L, Ja_Preenchidas) :-
+  I == L,
+  member((I, J), Ja_Preenchidas).
+
+    
+
 
 
 

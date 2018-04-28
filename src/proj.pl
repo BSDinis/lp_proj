@@ -192,9 +192,131 @@ soma_coluna(Col, [(_, J)|Pos], Soma) :-
   soma_coluna(Col, Pos, Soma).
 
 
+%% possibilidades_linha/5
+% possibilidades_linha(+Puz, +Posicoes_linha, 
+%                        +Total, +Ja_Preenchidas, -Possibildades_L)
+%
+% inputs:
+%   Puz: puzzle
+%   Posicoes_linha: posicoes da linha L
+%   Total: total de posicoes a preencher na linha L
+%   Ja_Preenchidas: posicoes ja preenchidas por linhas anteriores
+% 
+% output:
+%   Possibilidades_L: lista ordenada das possibilidades para 
+%   preencher a linha L
+%
+
+possibilidades_linha(Puz, Posicoes_linha, Total, Ja_Preenchidas, Possibilidades_L) :-
+  findall(Poss, gera_possibilidade(Puz, Posicoes_linha, Total, Ja_Preenchidas, Poss), Aux),
+  sort(Aux, Possibilidades_L).
 
 
+%% gera_possibilidade/5
+% gera_possibilidade(+Puz, +Posicoes_linha, +Total, +Ja_Preenchidas, -Poss)
+%
+% inputs:
+%   Puz: puzzle
+%   Posicoes_linha: posicoes da linha em questao
+%   Total: posicoes a preencher na linha em questao
+%   Ja_Preenchidas: posicoes ja preenchidas,
+%
+% output:
+%   Poss: uma possibilidade de preencher a linha em questao
+%
+% condicoes:
+%   comprimento de Poss == Total
+%
+%   Pos pertence a Poss => propaga(Puz, Pos, Posicoes), Posicoes subconjunto Poss
+%     - garantida por construcao
+%     
+%   propriedade_1:
+%     Pos pertence a Poss, Pos nao pertence a Posicoes_linha => Pos pertence a Ja_Preenchidas
+%
+%   propriedade_2:
+%     Pos pertence a Ja_Preenchidas, Pos pertence a Posicoes_linha => Pos pertence a Poss
+%
+%   verifica_parcial(Puz, Ja_Preenchidas, Dim, Poss).
 
-  
+gera_possibilidade(Puz, Posicoes_linha, Total, Ja_Preenchidas, Poss) :-
+  combinacao(Posicoes_linha, Aux),
+  propaga_lista(Puz, Aux, Poss),
+  length(Poss, Total),
+  propriedade_1(Posicoes_linha, Ja_Preenchidas, Poss),
+  propriedade_2(Posicoes_linha, Ja_Preenchidas, Poss),
+  dim_puz(Puz, Dim),
+  verifica_parcial(Puz, Ja_Preenchidas, Dim, Poss).
 
 
+%% combinacao/2
+% combinacao(+L1, -L2)
+%
+% input:
+%   L1: lista de elementos
+%
+% output:
+%   L2: combinacao dos elementos de L1.
+%
+% Faz uso do nao determinismo para computar L2.
+
+
+combinacao([], []).
+combinacao([_|T1], T2) :-
+  combinacao(T1, T2).
+
+combincacao([H|T1], [H|T2]) :-
+  combicacao(T1, T2).
+
+
+%% propaga_lista/3
+% propaga_lista(+Puz, +L, -Propagada)
+%
+% input:
+%   Puz: puzzle
+%   L: lista
+%
+% output:
+%   Propagada: lista onde estão unidas todas as propagacoes, ie
+%
+%   Pos pertence a Propagada => propaga(Puz, Pos, Posicoes), Posicoes subconjunto de Propagada
+
+propaga_lista(_, [], []).
+
+propaga_lista(Puz, [Pos|Resto], Propagada) :-
+  propaga(Puz, Pos, Posicoes),
+  propaga_lista(Puz, Resto, Parc),
+  append(Posicoes, Parc, Aux),
+  sort(Aux, Propagada).
+
+
+%% propriedade_1/3
+% propriedade_1(+L1, +L2, +L3)
+%
+% verifica se a seguinte propriedade se verifica:
+%   X pertence a L3, X nao pertence a L1 => Pos pertence a L2
+%   equiv: L3 \ L1 subconjunto de L2
+
+propriedade_1(L1, L2, L3) :-
+  subtract(L3, L1, Res),
+  subset(Res, L2).
+
+%% propriedade_2/3
+% propriedade_2(+L1, +L2, +L3)
+%
+% verifica se a seguinte propriedade se verifica
+%   X pertence a L1, X pertence a L2 => X pertence a L3
+%   equiv: L1 intersc. L2 subconjunto de L3
+
+propriedade_2(L1, L2, L3) :-
+  intersection(L1, L2, Res),
+  subset(Res, L3).
+
+
+%% dim_puz/2
+% dim_puz(+Puz, -Dim)
+%
+% input: puzzle
+%
+% output: dimensao do puzzle (== comprimento da ultima lista)
+dim_puz([_, _|L], Dim) :-
+  length(L, Dim).

@@ -1,0 +1,8 @@
+Juntar predicados in-built (em ingles), com predicados nossos, em
+portugues. Looks feio.
+
+Comentarios, whats the deal with that?
+
+How to unit test?
+
+verifica_parcial/4 : e so nao violar as colunas ou e tambem nao violar linhas anteriores.

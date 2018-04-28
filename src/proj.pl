@@ -10,6 +10,11 @@
 % Predicados Auxiliares
 %%%
 
+
+%%%
+%% propaga
+%%%
+
 %% propaga/3
 % propaga(+Puz, +Pos, -Posicoes) is det
 %
@@ -90,5 +95,26 @@ preenche_term([H|T], Pos, Parc, Posicoes) :-
   preenche_term(T, Pos, [H|Parc], Posicoes).
 
 
+%%%
+%% nao_altera_linha_anteriores
+%%%
+
+%% nao_altera_linhas_anteriores/3
+% nao_altera_linhas_anteriores(+Posicoes, +L, +Ja_Preenchidas)
+%
+% inputs:
+%   Posicoes: possivel preenchimento da linha L
+%   Ja_Preenchidas: lista de posicoes ja preenchidas
+%
+% retorna falso se a lista de Posicoes causa conflitos com as posicoes
+% ja preenchidas
+%
+
+nao_altera_linhas_ateriores([], L, Ja_Preenchidas).
+nao_altera_linhas_ateriores([Pos|Posicoes], L, Ja_Preenchidas) :-
+
+
+
+  
 
 

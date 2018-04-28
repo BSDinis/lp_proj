@@ -100,7 +100,7 @@ preenche_term([H|T], Pos, Parc, Posicoes) :-
 %%%
 
 %% nao_altera_linhas_anteriores/3
-% nao_altera_linhas_anteriores(+Posicoes, +L, +Ja_Preenchidas)
+% nao_altera_linhas_anteriores(?Posicoes, +L, +Ja_Preenchidas)
 %
 % inputs:
 %   Posicoes: possivel preenchimento da linha L, com a propagacao ja feita
@@ -117,11 +117,80 @@ nao_altera_linhas_anteriores([(I, J)|Posicoes], L, Ja_Preenchidas) :-
   nao_altera_linhas_anteriores(Posicoes, L, Ja_Preenchidas).
 
 nao_altera_linhas_anteriores([(I, _)|Posicoes], L, Ja_Preenchidas) :-
-  I == L,
+  I >= L,
   nao_altera_linhas_anteriores(Posicoes, L, Ja_Preenchidas).
 
 
+%% verifica_parcial/4
+% verifica_parcial(+Puz, +Ja_Preenchidas, +Dim, ?Poss) 
+%
+% inputs:
+%   Puz: puzzle
+%   Ja_Preenchidas: posicoes preenchidas anteriormente
+%   Dim: dimensao do puzzle
+%   Poss: possibilidade para preencher a lista
+%
+% retorna falso se preencher uma linha com Poss faz com que se exceda o 
+% total de uma das colunas
+%
     
+verifica_parcial([_, _, Tot_cols], Ja_Preenchidas, _, Poss) :- 
+  append(Ja_Preenchidas, Poss, Conjunta),
+  verifica_parcial(Tot_cols, Conjunta, 1).
+
+%% verifica_parcial/3
+% verifica_parcial(+Tot_cols, +Posicoes, +Col)
+%
+% inputs:
+%   Tot_cols: totais por coluna
+%   Posicoes: lista de posicoes (hipoteticamente) preenchidas
+%   Col: coluna a testar de momento
+%
+% e aplicado recursivamente ate a lista Tot_cols ficar vazia
+
+verifica_parcial([], _, _).
+verifica_parcial([Tot|Tots], Posicoes, Col) :-
+  verifica_parcial_coluna(Col, Tot, Posicoes),
+  Next_Col is Col + 1,
+  verifica_parcial(Tots, Posicoes, Next_Col).
+
+%% verifica_parcial_coluna/3
+% verifica_parcial_coluna(+Col, +Tot_col, +Posicoes)
+%
+% inputs:
+%   Col: coluna a testar
+%   Tot_col: maximo de posicoes preenchidas da coluna Col
+%   Posicoes: lista de posicoes (hipoteticamente) preenchidas
+%
+% retorna falso se a solucao parcial para o puzzle dada por Posicoes 
+% exceder o total da linha Col
+% 
+
+verifica_parcial_coluna(Col, Tot_col, Posicoes) :-
+  soma_coluna(Col, Posicoes, Soma),
+  Soma =< Tot_col.
+  
+%% soma_coluna/3
+% soma_coluna(+Col, +Posicoes, -Soma) is det
+%
+% inputs:
+%   Col: coluna a somar
+%   Posicoes: posicoes (hipoteticamente) preenchidas
+%
+% output:
+%   Soma: soma de posicoes cuja coluna e col
+%%
+
+soma_coluna(_, [], 0).
+
+soma_coluna(Col, [(_, Col)|Pos], Soma) :-
+  soma_coluna(Col, Pos, Parc_Soma),
+  Soma is Parc_Soma + 1.
+
+soma_coluna(Col, [(_, J)|Pos], Soma) :-
+  J \= Col,
+  soma_coluna(Col, Pos, Soma).
+
 
 
 

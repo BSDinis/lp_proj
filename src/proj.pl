@@ -261,12 +261,8 @@ gera_possibilidade(Puz, Posicoes_linha, Total, Ja_Preenchidas, Poss) :-
 
 
 combinacao([], []).
-combinacao([_|T1], T2) :-
-  combinacao(T1, T2).
-
-combincacao([H|T1], [H|T2]) :-
-  combicacao(T1, T2).
-
+combinacao([_|T], T2) :- combinacao(T, T2).
+combinacao([H|T], [H|T2]) :- combinacao(T, T2).
 
 %% propaga_lista/3
 % propaga_lista(+Puz, +L, -Propagada)

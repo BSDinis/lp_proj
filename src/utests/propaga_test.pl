@@ -7,7 +7,7 @@
 %%%
 
 :- ['../proj'].
-:- ['../../exemplos_puzzles'].
+:- ['exemplos_puzzles'].
 
 
 test(Test_number) :-

@@ -191,6 +191,9 @@ soma_coluna(Col, [(_, J)|Pos], Soma) :-
   J \= Col,
   soma_coluna(Col, Pos, Soma).
 
+%%%
+% possibilidades_linha
+%%%
 
 %% possibilidades_linha/5
 % possibilidades_linha(+Puz, +Posicoes_linha, 
@@ -356,3 +359,106 @@ propriedade_2(L1, L2, L3) :-
 % output: dimensao do puzzle (== comprimento da ultima lista)
 dim_puz([_, _, L], Dim) :-
   length(L, Dim).
+
+
+%%%
+% resolve
+%%%
+
+%% resolve/2
+% resolve(+Puz, -Solucao)
+%
+% input: Puz: puzzle a resolver
+% output: Solucao: solucao de Puz
+
+resolve(Puz, Sol) :-
+  dim_puz(Puz, Dim),
+  resolve(Puz, 1, Dim, [], Sol).
+
+%% resolve/5
+% resolve(+Puz, +L, +Dim, +Ja_Preenchidas, -Sol)
+%
+% inputs:
+%   Puz: puzzle a resolver
+%   L: linha a resolver
+%   Dim: dimensao do puzzle
+%   Ja_Preenchidas: posicoes ja preenchidas (solucao parcial)
+%
+% output: Sol: solucao do puzzle
+
+resolve(_, L, Dim, Ja_Preenchidas, Ja_Preenchidas) :- L > Dim.
+
+resolve(Puz, L, Dim, Ja_Preenchidas, Sol) :-
+  gera_posicoes_linha(L, Dim, Posicoes_linha),
+  puzzle_total_linha(Puz, L, Total),
+  possibilidades_linha(Puz, Posicoes_linha, Total, Ja_Preenchidas, Possibilidades_L), !,
+  testa_possibilidades(Puz, L, Dim, Ja_Preenchidas, Possibilidades_L, Sol).
+
+%% gera_posicoes_linha/3
+% gera_posicoes_linha(+L, +Dim, -Posicoes_linha)
+%
+% inputs:
+%   L: linha em questao
+%   Dim: dimensao do puzzle (e da linha)
+%
+% output:
+%   Posicoes_linha: lista com todas as posicoes da linha
+
+gera_posicoes_linha(L, Dim, Posicoes_linha) :- 
+  gera_posicoes_linha(L, 1, Dim, Posicoes_linha), !.
+
+
+%% gera_posicoes_linha/4
+% gera_posicoes_linha(+L, +Col, +Dim, -Posicoes_linha)
+%
+% inputs:
+%   L: linha em questao
+%   Col: coluna (iterador)
+%   Dim: dimensao do puzzle (e da linha)
+%
+% output:
+%   Posicoes_linha: lista com todas as posicoes da linha
+
+gera_posicoes_linha(_, Col, Dim, []) :- Col > Dim, !.
+
+gera_posicoes_linha(L, Col, Dim, [(L, Col)|Resto]) :-
+  New_Col is Col + 1,
+  gera_posicoes_linha(L, New_Col, Dim, Resto).
+
+
+%% puzzle_total_linha/3
+% puzzle_total_linha(+Puz, +L, -Total)
+%
+% inputs:
+%   Puz: puzzle
+%   L: linha
+%
+% output: Total: total de posicoes a preencher na linha L
+
+puzzle_total_linha([_, Tot_linhas, _], L, Total) :- nth1(L, Tot_linhas, Total).
+
+%% testa_possibilidades/6
+% testa_possibilidades(+Puz, +L, +Dim, +Ja_Preenchidas, +Possibilidades_L, -Sol)
+%
+% inputs:
+%   Puz: puzzle a resolver
+%   L: linha a preencher
+%   Dim: dimensao do puzzle
+%   Ja_Preenchidas: posicoes preenchidas (solucao parcial)
+%   Possibilidades_L: lista de possibilidades para preencher a lista L
+%
+% output: Sol: Solucao do Puzzle
+%
+% nao deterministicamente escolhe uma possibilidade a testar
+%
+% nota: o caso de paragem (comprimento(Possibilidades_L) = 1) esta implicito na primeira
+% definicao do predicado
+
+testa_possibilidades(Puz, L, Dim, Ja_Preenchidas, [Poss|_], Sol) :-
+  union(Ja_Preenchidas, Poss, Novas_Preenchidas),
+  Nova_L is L + 1,
+  resolve(Puz, Nova_L, Dim, Novas_Preenchidas, Sol).
+
+testa_possibilidades(Puz, L, Dim, Ja_Preenchidas, [_|Possibilidades_L], Sol) :-
+  \+ length(Possibilidades_L, 0),
+  testa_possibilidades(Puz, L, Dim, Ja_Preenchidas, Possibilidades_L, Sol).

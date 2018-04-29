@@ -241,8 +241,9 @@ possibilidades_linha(Puz, Posicoes_linha, Total, Ja_Preenchidas, Possibilidades_
 gera_possibilidade(Puz, Posicoes_linha, Total, Ja_Preenchidas, Poss) :-
   combinacao(Posicoes_linha, Aux),
   propaga_lista(Puz, Aux, Poss),
-  length(Poss, Total),
-  propriedade_1(Posicoes_linha, Ja_Preenchidas, Poss),
+  [(L,_)|_] = Posicoes_linha, % descobre a linha em questao
+  total_linha(Poss, L, Total), 
+  propriedade_1(L, Ja_Preenchidas, Poss),
   propriedade_2(Posicoes_linha, Ja_Preenchidas, Poss),
   dim_puz(Puz, Dim),
   verifica_parcial(Puz, Ja_Preenchidas, Dim, Poss).
@@ -274,7 +275,7 @@ combinacao([H|T], [H|T2]) :- combinacao(T, T2).
 % output:
 %   Propagada: lista onde estão unidas todas as propagacoes, ie
 %
-%   Pos pertence a Propagada => propaga(Puz, Pos, Posicoes), Posicoes subconjunto de Propagada
+%   Pos pertence a L => propaga(Puz, Pos, Posicoes), Posicoes subconjunto de Propagada
 
 propaga_lista(_, [], []).
 
@@ -285,16 +286,55 @@ propaga_lista(Puz, [Pos|Resto], Propagada) :-
   sort(Aux, Propagada).
 
 
+%% total_linha/3,
+% total_linha(+Lista, +L, ?Total)
+%
+% inputs:
+%   Lista: lista de posicoes
+%   L: linha
+%
+% Total e o numero de posicoes da Lista cuja linha e L
+
+total_linha([], _, 0).
+
+total_linha([(L, _)|Lista], L, Total) :-
+  total_linha(Lista, L, Sub_Total),
+  Total is Sub_Total + 1.
+
+total_linha([(I, _)|Lista], L, Total) :-
+  I \= L,
+  total_linha(Lista, L, Total).
+
 %% propriedade_1/3
-% propriedade_1(+L1, +L2, +L3)
+% propriedade_1(+L, +Ja_Preenchidas, +Poss)
 %
 % verifica se a seguinte propriedade se verifica:
-%   X pertence a L3, X nao pertence a L1 => Pos pertence a L2
-%   equiv: L3 \ L1 subconjunto de L2
+%   as posicoes de poss (I, J) com I < L estao em Ja_Preenchidas
 
-propriedade_1(L1, L2, L3) :-
-  subtract(L3, L1, Res),
-  subset(Res, L2).
+propriedade_1(L, Ja_Preenchidas, Poss) :-
+  filtra_linha_menor(L, Poss, Filtrada),
+  subset(Filtrada, Ja_Preenchidas).
+
+
+%% filtra_linha_menor/3
+% filtra_linha_menor(+L, +Lista, -Filtrada)
+%
+% inputs:
+%   L: linha
+%   Lista: lista a filtrar
+%
+% output:
+%   Filtrada: lista de elementos de Lista cuja linha e menor que L
+
+filtra_linha_menor(_, [], []).
+
+filtra_linha_menor(L, [(I, J)|Resto], [(I, J)|Filtrada]) :- 
+  I < L,
+  filtra_linha_menor(L, Resto, Filtrada).
+
+filtra_linha_menor(L, [(I, _)|Resto], Filtrada) :- 
+  I >= L,
+  filtra_linha_menor(L, Resto, Filtrada).
 
 %% propriedade_2/3
 % propriedade_2(+L1, +L2, +L3)
@@ -314,5 +354,5 @@ propriedade_2(L1, L2, L3) :-
 % input: puzzle
 %
 % output: dimensao do puzzle (== comprimento da ultima lista)
-dim_puz([_, _|L], Dim) :-
+dim_puz([_, _, L], Dim) :-
   length(L, Dim).

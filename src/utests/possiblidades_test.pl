@@ -16,7 +16,7 @@ test(Test_n) :-
   preench(Test_n, Ja_Preenchidas),
   possibilidades_linha(Puz, Posicoes_linha, Total, Ja_Preenchidas, Possibilidades_L),
   sol(Test_n, Sol),
-  write(Possibilidades_L),
+  write(Possibilidades_L), nl, write(Sol),
   Sol == Possibilidades_L.
 
 

@@ -386,7 +386,7 @@ resolve(Puz, Sol) :-
 
 resolve(_, L, Dim, Ja_Preenchidas, Sol) :- 
   L > Dim,
-  sort(1, @=<, Ja_Preenchidas, Sol).
+  sort(Ja_Preenchidas, Sol).
 
 
 resolve(Puz, L, Dim, Ja_Preenchidas, Sol) :-

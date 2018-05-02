@@ -16,7 +16,7 @@
 %%%
 
 %% propaga/3
-% propaga(+Puz, +Pos, -Posicoes) is det
+% propaga(+Puz, +Pos, -Posicoes) 
 %
 % inputs:
 %   Puz: lista com 3 listas: termometros, totais das linhas
@@ -135,7 +135,7 @@ nao_altera_linhas_anteriores([(I, _)|Posicoes], L, Ja_Preenchidas) :-
 %
     
 verifica_parcial([_, _, Tot_cols], Ja_Preenchidas, _, Poss) :- 
-  append(Ja_Preenchidas, Poss, Conjunta),
+  union(Ja_Preenchidas, Poss, Conjunta),
   verifica_parcial(Tot_cols, Conjunta, 1).
 
 %% verifica_parcial/3
@@ -199,13 +199,11 @@ soma_coluna(Col, [(_, J)|Pos], Soma) :-
 % possibilidades_linha(+Puz, +Posicoes_linha, 
 %                        +Total, +Ja_Preenchidas, -Possibildades_L)
 %
-% inputs:
+% args:
 %   Puz: puzzle
 %   Posicoes_linha: posicoes da linha L
 %   Total: total de posicoes a preencher na linha L
 %   Ja_Preenchidas: posicoes ja preenchidas por linhas anteriores
-% 
-% output:
 %   Possibilidades_L: lista ordenada das possibilidades para 
 %   preencher a linha L
 %
@@ -276,7 +274,7 @@ combinacao([H|T], [H|T2]) :- combinacao(T, T2).
 %   L: lista
 %
 % output:
-%   Propagada: lista onde estão unidas todas as propagacoes, ie
+%   Propagada: lista onde estao unidas todas as propagacoes, ie
 %
 %   Pos pertence a L => propaga(Puz, Pos, Posicoes), Posicoes subconjunto de Propagada
 
@@ -386,7 +384,10 @@ resolve(Puz, Sol) :-
 %
 % output: Sol: solucao do puzzle
 
-resolve(_, L, Dim, Ja_Preenchidas, Ja_Preenchidas) :- L > Dim.
+resolve(_, L, Dim, Ja_Preenchidas, Sol) :- 
+  L > Dim,
+  sort(1, @=<, Ja_Preenchidas, Sol).
+
 
 resolve(Puz, L, Dim, Ja_Preenchidas, Sol) :-
   gera_posicoes_linha(L, Dim, Posicoes_linha),
